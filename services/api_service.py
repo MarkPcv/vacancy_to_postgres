@@ -14,8 +14,8 @@ def get_employers(search_text: str) -> list[tuple[str, str]]:
         'page': 0,  # page number
         'text': search_text,
         'per_page': 100,  # 100 vacancies per page
-        'type': 'company', # search only company
-        'only_with_vacancies': True, # at lest one vacancy per company
+        'type': 'company',  # search only company
+        'only_with_vacancies': True,  # at lest one vacancy per company
     }
     # Get first response
     response = requests.get("https://api.hh.ru/employers", params)
@@ -25,7 +25,7 @@ def get_employers(search_text: str) -> list[tuple[str, str]]:
     # Get total number of pages
     pages = json_obj['pages']
     # Get remaining employers information
-    for page in range(1,pages):
+    for page in range(1, pages):
         params['page'] = page
         response = requests.get("https://api.hh.ru/employers", params)
         json_obj = json.loads(response.text)
@@ -43,10 +43,7 @@ def retrieve_employers(items: list[dict]) -> list[tuple[str, str]]:
         employers.append((item['id'], item['name']))
     return employers
 
-
-
-## TESTING
-result = get_employers('1')
-
-print(result)
-print(len(result))
+# TESTING
+# result = get_employers('1')
+# print(result)
+# print(len(result))
