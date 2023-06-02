@@ -42,7 +42,7 @@ def create_database(db_name) -> None:
     conn.close()
 
 
-def create_tables(db_name):
+def create_tables(db_name) -> None:
     """
     Creates Employers and Vacancies tables
     """
@@ -79,3 +79,9 @@ def create_tables(db_name):
             conn.close()
 
 
+def insert_employer_data(employer: tuple) -> None:
+    pass
+
+
+def insert_vacancies_data(employer: list) -> None:
+    pass

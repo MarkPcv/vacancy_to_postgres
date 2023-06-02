@@ -1,4 +1,5 @@
 from services.api_service import *
+from services.sql_service import *
 
 
 def get_employer_choice(employer_name: str) -> int:
@@ -17,7 +18,22 @@ def get_employer_choice(employer_name: str) -> int:
     return choice
 
 
-def chose_employers_by_user() -> list[tuple[str, str]]:
+def get_employers(search_text: str) -> list:
+    """
+    Returns a list of employers based on the search query
+    """
+    # Create instance of Employer Search
+    api_search = EmployerSearch()
+    # Get total pages of the matching employers
+    pages = api_search.get_total_pages(search_text)
+    # Record all employers and return them
+    employers = []
+    for page in range(0, pages):
+        employers.extend(api_search.get_page(search_text, page))
+    return employers
+
+
+def chose_employers_by_user() -> list[tuple[str, str, str]]:
     """
     Returns the list of employers chosen by user
     """
@@ -43,14 +59,42 @@ def chose_employers_by_user() -> list[tuple[str, str]]:
     return chosen_employers
 
 
+def fill_tables(employers: list) -> None:
+    """
+    Fills Employers and Vacancies tables
+    """
+    for employer in employers:
+        # Insert information into Employers table
+        insert_employer_data(employer)
+        # Create instance of Vacancy Search
+        api_search = VacancySearch()
+        # Get employer ID
+        employer_id = employer[0]
+        # Get total number of pages for vacancies of employer
+        pages = api_search.get_total_pages(employer_id)
+        # Get information from each page and fill into vacancies table
+        for page in range(0, pages):
+            vacancies = api_search.get_page(employer_id, page)
+            # print(vacancies)
+            insert_vacancies_data(vacancies)
+
+
+
 def main():
     """
     Main Algorithm
     """
     print("Greetings, let's start employers' search!")
     # Ask user to choose 10 employers
-    result = chose_employers_by_user()
-    print(result)
+    employers = chose_employers_by_user()
+    # Ask user to enter database name
+    db_name = input("Please enter database name: ")
+    # Create database
+    create_database(db_name)
+    # Create tables
+    create_tables(db_name)
+    # Store each employer and their vacancies into the tables
+    fill_tables(employers)
 
 
 if __name__ == "__main__":
