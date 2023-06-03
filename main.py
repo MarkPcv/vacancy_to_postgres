@@ -59,25 +59,25 @@ def chose_employers_by_user() -> list[tuple[str, str, str]]:
     return chosen_employers
 
 
-def fill_tables(employers: list) -> None:
+def fill_tables(employers: list, db_name: str) -> None:
     """
     Fills Employers and Vacancies tables
     """
     for employer in employers:
-        # Insert information into Employers table
-        insert_employer_data(employer)
+        # Insert information into Employers table and return its primary key
+        pk_employer = insert_employer_data(employer, db_name)
         # Create instance of Vacancy Search
         api_search = VacancySearch()
         # Get employer ID
         employer_id = employer[0]
-        # Get total number of pages for vacancies of employer
+        # Get total number of pages for vacancies of each employer
         pages = api_search.get_total_pages(employer_id)
         # Get information from each page and fill into vacancies table
         for page in range(0, pages):
+            # Get information about vacancies from one page
             vacancies = api_search.get_page(employer_id, page)
-            # print(vacancies)
-            insert_vacancies_data(vacancies)
-
+            # Fill the Vacancy table
+            insert_vacancies_data(vacancies, pk_employer)
 
 
 def main():
@@ -94,7 +94,7 @@ def main():
     # Create tables
     create_tables(db_name)
     # Store each employer and their vacancies into the tables
-    fill_tables(employers)
+    fill_tables(employers, db_name)
 
 
 if __name__ == "__main__":

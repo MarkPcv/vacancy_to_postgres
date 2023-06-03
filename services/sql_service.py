@@ -3,7 +3,7 @@ import psycopg2
 from configparser import ConfigParser
 
 
-def config(filename="database.ini", section="postgresql"):
+def config(filename="database.ini", section="postgresql") -> dict:
     # create a parser
     parser = ConfigParser()
     # read config file
@@ -20,7 +20,7 @@ def config(filename="database.ini", section="postgresql"):
     return db
 
 
-def create_database(db_name) -> None:
+def create_database(db_name: str) -> None:
     """
     Creates a new database
     """
@@ -42,7 +42,7 @@ def create_database(db_name) -> None:
     conn.close()
 
 
-def create_tables(db_name) -> None:
+def create_tables(db_name: str) -> None:
     """
     Creates Employers and Vacancies tables
     """
@@ -79,9 +79,39 @@ def create_tables(db_name) -> None:
             conn.close()
 
 
-def insert_employer_data(employer: tuple) -> None:
-    pass
+def insert_employer_data(employer: tuple, db_name: str) -> int:
+    """
+    Fills Employers table with data about employer
+    """
+    # Get parameters from .ini file
+    params = config()
+    params.update({'dbname': db_name})
+    employer_id = 0
+    try:
+        with psycopg2.connect(**params) as conn:
+            with conn.cursor() as cur:
+                # Fill Employers Table
+                cur.execute(
+                    """
+                    INSERT INTO employers(company_name, headhunter_id, url)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                    """,
+                    (employer[1], employer[0], employer[2])
+                )
+                # Get primary key fot current employer
+                employer_id = cur.fetchone()[0]
+
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+
+    # return primary key of current employer
+    return employer_id
 
 
-def insert_vacancies_data(employer: list) -> None:
+# TODO: SQL for Vacancy
+def insert_vacancies_data(employer: list, pk_employer: int) -> None:
     pass
