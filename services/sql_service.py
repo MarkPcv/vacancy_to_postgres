@@ -67,7 +67,7 @@ def create_tables(db_name: str) -> None:
                     CREATE TABLE vacancies(
                         id SERIAL PRIMARY KEY,
                         name VARCHAR,
-                        company_id VARCHAR,
+                        company_id INTEGER,
                         salary INTEGER,
                         url VARCHAR
                     )
@@ -112,7 +112,6 @@ def insert_employer_data(employer: tuple, db_name: str) -> int:
     return employer_id
 
 
-# TODO: SQL for Vacancy
 def insert_vacancies_data(vacancies: list,
                           pk_employer: int, db_name: str) -> None:
     """
@@ -133,6 +132,31 @@ def insert_vacancies_data(vacancies: list,
                         """,
                         (vacancy[0], pk_employer, vacancy[1], vacancy[2])
                     )
+
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+def add_relationship(db_name:str) -> None:
+    """
+    Add relationship between Employers and Vacancies tables
+    """
+    # Get parameters from .ini file
+    params = config()
+    params.update({'dbname': db_name})
+    try:
+        with psycopg2.connect(**params) as conn:
+            with conn.cursor() as cur:
+                # Create foreign key for Vacancies table
+                cur.execute(
+                    """
+                    ALTER TABLE vacancies ADD CONSTRAINT fk_vacancies_company
+                    FOREIGN KEY(company_id) REFERENCES employers(id)
+                    """
+                )
 
     except(Exception, psycopg2.DatabaseError) as error:
         print(error)

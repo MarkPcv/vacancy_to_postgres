@@ -81,6 +81,8 @@ def fill_tables(employers: list, db_name: str) -> None:
             vacancies = api_search.get_page(employer_id, page)
             # Fill the Vacancy table
             insert_vacancies_data(vacancies, pk_employer, db_name)
+    # Create relationship between Employers and Vacancies tables
+    add_relationship(db_name)
 
 
 def main():
