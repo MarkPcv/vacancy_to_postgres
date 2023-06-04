@@ -113,5 +113,29 @@ def insert_employer_data(employer: tuple, db_name: str) -> int:
 
 
 # TODO: SQL for Vacancy
-def insert_vacancies_data(employer: list, pk_employer: int) -> None:
-    pass
+def insert_vacancies_data(vacancies: list,
+                          pk_employer: int, db_name: str) -> None:
+    """
+    Fills Vacancies table with data about vacancies
+    """
+    # Get parameters from .ini file
+    params = config()
+    params.update({'dbname': db_name})
+    try:
+        with psycopg2.connect(**params) as conn:
+            with conn.cursor() as cur:
+                for vacancy in vacancies:
+                    # Fill Vacancies Table
+                    cur.execute(
+                        """
+                        INSERT INTO vacancies(name, company_id, salary, url)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (vacancy[0], pk_employer, vacancy[1], vacancy[2])
+                    )
+
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+    finally:
+        if conn is not None:
+            conn.close()
