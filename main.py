@@ -1,13 +1,13 @@
 from services.api_service import *
 from services.sql_service import *
+from tqdm import tqdm
 
 
 def get_employer_choice(employer_name: str) -> int:
     """
     Asks user: to save the employer to the list or not
     """
-    choice = int(input("Employer's information:\n"
-                       f"Company name: {employer_name}\n"
+    choice = int(input(f"Company name: {employer_name}\n"
                        "Would you like to add it to the list?\n"
                        "1 - Yes\n"
                        "0 - No\n"))
@@ -52,7 +52,7 @@ def chose_employers_by_user() -> list[tuple[str, str, str]]:
                 chosen_employers.append(employer)
             # Exit loop when 10 employers found
             # TODO: CHANGE TO '10' IN CONDITION
-            if len(chosen_employers) == 2:
+            if len(chosen_employers) == 1:
                 chosen = True
                 break
 
@@ -64,6 +64,7 @@ def fill_tables(employers: list, db_name: str) -> None:
     Fills Employers and Vacancies tables
     """
     for employer in employers:
+        print(f"Filling table for employer - '{employer[1]}'")
         # Insert information into Employers table and return its primary key
         pk_employer = insert_employer_data(employer, db_name)
         # Create instance of Vacancy Search
@@ -73,11 +74,13 @@ def fill_tables(employers: list, db_name: str) -> None:
         # Get total number of pages for vacancies of each employer
         pages = api_search.get_total_pages(employer_id)
         # Get information from each page and fill into vacancies table
-        for page in range(0, pages):
+        for page in tqdm(range(0, pages), desc="Progress", ncols=50,
+                         colour='#009900',
+                         bar_format='{desc}: |{bar}|{percentage:3.0f}%'):
             # Get information about vacancies from one page
             vacancies = api_search.get_page(employer_id, page)
             # Fill the Vacancy table
-            insert_vacancies_data(vacancies, pk_employer)
+            insert_vacancies_data(vacancies, pk_employer, db_name)
 
 
 def main():

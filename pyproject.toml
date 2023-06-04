@@ -10,6 +10,7 @@ packages = [{include = "database_basics"}]
 python = "^3.11"
 requests = "^2.31.0"
 psycopg2 = "^2.9.6"
+tqdm = "^4.65.0"
 
 
 [build-system]
