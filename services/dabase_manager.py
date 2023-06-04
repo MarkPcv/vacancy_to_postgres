@@ -1,7 +1,11 @@
-from sql_service import *
+from services.sql_service import *
 
 
 class DBManager:
+    """
+    A database manager that retrieves information from Employers and
+    Vacancies tables based on user preference
+    """
     def __init__(self, db_name: str):
         self.params = config()
         self.params.update({'dbname': db_name})
