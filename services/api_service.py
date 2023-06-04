@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 class HeadHunterAPI(ABC):
 
     @abstractmethod
-    def get_total_pages(self, target:str) -> int:
+    def get_total_pages(self, target: str) -> int:
         pass
 
     @abstractmethod
@@ -31,7 +31,7 @@ class EmployerSearch(HeadHunterAPI):
             'only_with_vacancies': True,  # at lest one vacancy per company
         }
 
-    def get_total_pages(self, search_text:str) -> int:
+    def get_total_pages(self, search_text: str) -> int:
         """
         Returns total number of pages for search query
         """
@@ -72,6 +72,22 @@ class EmployerSearch(HeadHunterAPI):
 
 
 class VacancySearch(HeadHunterAPI):
+    @staticmethod
+    def get_exchange_rates() -> dict:
+        """
+        Returns exchange rates from API service
+        """
+        # Get response
+        response = requests.get("https://api.hh.ru/dictionaries")
+        # Convert to JSON object
+        json_obj = json.loads(response.text)
+        # Get currency list
+        currencies = json_obj['currency']
+        # Get exchange rates
+        rates = {}
+        for currency in currencies:
+            rates[currency['code']] = currency['rate']
+        return rates
 
     def __init__(self):
         """
@@ -86,8 +102,9 @@ class VacancySearch(HeadHunterAPI):
             'employer_id': '',  # HeadHunter ID of company
             'only_with_salary': True,  # only vacancies with salary
         }
+        self.__rates = self.get_exchange_rates()
 
-    def get_total_pages(self, employer_id:str) -> int:
+    def get_total_pages(self, employer_id: str) -> int:
         """
         Returns total number of pages for vacancies of employer
         """
@@ -101,7 +118,7 @@ class VacancySearch(HeadHunterAPI):
         return json_obj['pages']
 
     def get_page(self, employer_id: str,
-                 page: int) -> list[tuple[str, str, int, str]]:
+                 page: int) -> list[tuple[str, int, str]]:
         """
         Returns a list of employers based on the search text
         """
@@ -112,51 +129,27 @@ class VacancySearch(HeadHunterAPI):
         # Convert response to JSON object
         json_obj = json.loads(response.text)
         # Get vacancies data from JSON object
-        vacancies = self.retrieve_info(json_obj['items'], employer_id)
-
+        vacancies = self.retrieve_info(json_obj['items'])
         return vacancies
 
-    @classmethod
-    def retrieve_info(cls, items: list[dict],
-                      employer_id: str) -> list[tuple[str, str, int, str]]:
+    def retrieve_info(self, items: list[dict]) -> list[tuple[str, int, str]]:
         """
         Retrieves Name, Salary and URL for each vacancy from the list
         """
         vacancies = []
         for item in items:
-            salary = cls.get_salary(item)
-            vacancies.append((item['name'], employer_id, salary,
-                              item['alternate_url']))
+            salary = self.get_salary(item)
+            vacancies.append((item['name'], salary, item['alternate_url']))
         return vacancies
 
-    @classmethod
-    def get_salary(cls, vacancy: dict) -> int:
+    def get_salary(self, vacancy: dict) -> int:
         """
         Determines the vacancy salary
         :param vacancy: Vacancy object from API
         """
-        # Get conversion rate to Russian ruble
-        rate = cls.get_exchange_rate(vacancy['salary'])
         # Check if vacancy has minimum salary otherwise return maximum
         if vacancy['salary']['from'] is None:
-            return int(vacancy['salary']['to'] / rate)
-        return int(vacancy['salary']['from'] / rate)
-
-    @classmethod
-    def get_exchange_rate(cls, salary: dict) -> float:
-        # Get response
-        response = requests.get("https://api.hh.ru/dictionaries")
-        # Convert to JSON object
-        json_obj = json.loads(response.text)
-        # Get currency list
-        currencies = json_obj['currency']
-        # Get exchange rate to Russian ruble
-        for currency in currencies:
-            if salary['currency'] == currency['code']:
-                return currency['rate']
-
-
-# TESTING
-# search = VacancySearch()
-# vacancies = search.get_page('5974128', 0)
-# print(vacancies)
+            return int(vacancy['salary']['to'] /
+                       self.__rates[vacancy['salary']['currency']])
+        return int(vacancy['salary']['from'] /
+                   self.__rates[vacancy['salary']['currency']])
