@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Mark Pochivalov <pochivalov.mark@gmail.com>"]
 readme = "README.md"
-packages = [{include = "database_basics"}]
+packages = [{include = "services"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -12,6 +12,8 @@ requests = "^2.31.0"
 psycopg2 = "^2.9.6"
 tqdm = "^4.65.0"
 
+[tool.poetry.scripts]
+start = 'main:main'
 
 [build-system]
 requires = ["poetry-core"]
