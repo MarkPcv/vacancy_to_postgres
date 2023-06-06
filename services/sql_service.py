@@ -4,6 +4,9 @@ from configparser import ConfigParser
 
 
 def config(filename="database.ini", section="postgresql") -> dict:
+    """
+    Returns configuration parameters
+    """
     # create a parser
     parser = ConfigParser()
     # read config file

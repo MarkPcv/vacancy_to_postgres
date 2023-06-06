@@ -15,7 +15,9 @@ class HeadHunterAPI(ABC):
 
 
 class EmployerSearch(HeadHunterAPI):
-
+    """
+    A class that is used to search for employers using HeadHunter API
+    """
     def __init__(self):
         """
         Initialise the class
@@ -72,6 +74,9 @@ class EmployerSearch(HeadHunterAPI):
 
 
 class VacancySearch(HeadHunterAPI):
+    """
+    A class that used to search vacancies using HeadHunter API
+    """
     @staticmethod
     def get_exchange_rates() -> dict:
         """
