@@ -1,7 +1,7 @@
-# Database Workflow using API
+# Project «Vacancy Database Storage»
 
-## Project Description
-This project allows user to create Database with tables: **Employers** 
+## Description
+This project allows user to create Database via PostgreSQL with tables: **Employers** 
 and **Vacancies**. The information about employers and vacancies is gathered
 using **HeadHunter** API platform which is commonly used in CIS region. User 
 selects employers and their vacancies are stored in the user-defined database.
